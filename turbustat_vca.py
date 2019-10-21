@@ -1,6 +1,3 @@
-#git test comment
-#git test comment 2
-#git test comment 3
 #MAKE PPV SIM CUBE
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -123,34 +120,4 @@ vca_array=vca_array[1:,:]
 
 #save the array for future plotting without recomputing
 np.save(figsaveloc, vca_array)
-
-
-#for i in [128,64,32,16,8,4,2,1]:
-#    vca = VCA(cube, channel_width=i)
-#    vca.run(verbose=False, beam_correct=correctbeam)
-#    vca_array=np.vstack((vca_array,[vca.slope,i]))
-#vca_array=vca_array[1:,:]
-
-#for i in [0.1*arlen,0.2*arlen,0.3*arlen,0.4*arlen,0.5*arlen,0.6*arlen,0.7*arlen,0.8*arlen,0.9*arlen,1*arlen]:
-#    vca = VCA(cube, channel_width=i * u.km / u.s)
-#    vca.run(verbose=False, beam_correct=correctbeam)
-#    vca_array=np.vstack((vca_array,[vca.slope,i]))
-#vca_array=vca_array[1:,:]
 ##########################
-
-##########################
-#Plot the VCA by channel
-
-specin=vca_array[:,0]
-thickness=vca_array[:,1]
-upper_err=vca_array[:,0]+vca_array[:,2]
-lower_err=vca_array[:,0]-vca_array[:,2]
-
-plt.title('VCA:' + name)
-plt.xlabel('Channel Thickness (km/s)')
-plt.ylabel('Spectral Index')
-plt.tight_layout()
-plt.fill_between(thickness, upper_err, lower_err)
-plt.scatter(thickness,specin)
-plt.tight_layout()
-plt.savefig(figsaveloc + '.png', format='png')
