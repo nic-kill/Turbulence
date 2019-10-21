@@ -121,3 +121,9 @@ vca_array=vca_array[1:,:]
 #save the array for future plotting without recomputing
 np.save(figsaveloc, vca_array)
 ##########################
+
+def def greet(name):
+	"""This function greets to
+	the person passed in as
+	parameter"""
+	print("Hello, " + name + ". Good morning!")
