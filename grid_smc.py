@@ -14,9 +14,11 @@ print(wholecube[0].shape)
 xlen=len(wholecube[0].data[0,:,0])
 ylen=len(wholecube[0].data[0,0,:])
 
+xax=[]
 for i in np.arange(splitfactor+1):
 	xax=np.append(xax,i*xlen/splitfactor)
 
+yax=[]
 for i in np.arange(splitfactor+1):
        	yax=np.append(yax,i*ylen/splitfactor)
 
@@ -28,7 +30,7 @@ wholespeccube=SpectralCube.read('/avatar/naomi/ASKAP/SMC/SB_8906/SMC_8906.lsr.K.
 for j in np.arange(0,splitfactor):
 	for i in np.arange(0,splitfactor):
 		sub=wholespeccube.subcube(xlo=int(xax[i]), xhi=int(xax[i+1]), ylo=int(yax[j]), yhi=int(yax[j+1]), zlo=55, zhi=310, rest_value=None)
-		sub.write('/avatar/nickill/smc/grid_cubes/smc_grid_x'+str(i)+'_y'+str(j)+'.fits')
+		sub.write('/avatar/nickill/smc/grid_cubes/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.fits')
 		print('done x'+str(i)+' y'+str(j))
 
 
