@@ -27,7 +27,7 @@ name='smc_grid_x0_y0'
 #if not simulating specify the location of the .fits to source for the vca
 sourcefits = '/avatar/nickill/smc/grid_cubes/'+name+'.fits'
 figtitle = name
-figsaveloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/' + name + 'witherrors'
+figsaveloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/' + name
 #########################
 
 
@@ -94,36 +94,43 @@ if taper==True:
 
 
 ########################
-#DO VCA
-#set arrays for VCA calc
-vca_array=np.zeros(3)
-#arlen=int(len(cube.data[:,0,0]))/10
+def do_vca(vcacube, array_save_loc):
+    """This function greets to
+    the person passed in as
+    parameter"""
+    
+    vca_array=np.zeros(3)
+    #arlen=int(len(vcacube.data[:,0,0]))/10
+    
+    #do full thickness mom0 SPS and add to array first
+    #import data and compute moment 0
+    moment0=vcacube.moment(order=0)
+    
+    #compute SPS, add in distance at some point as parameter
+    pspec = PowerSpectrum(moment0)
+    pspec.run(verbose=False, xunit=u.pix**-1)
+    vca_array=np.vstack((vca_array,[pspec.slope,len(vcacube[:,0,0]),pspec.slope_err]))
 
-#do full thickness mom0 SPS and add to array first
-#import data and compute moment 0
-moment0=cube.moment(order=0)
+    #iterate VCA over fractions of the total width of the PPV vcacube
+    for i in [128,64,32,16,8,4,2,1]:
+        vcacube.allow_huge_operations=True
+        downsamp_vcacube = vcacube.downsample_axis(i, axis=0)
+        downsamp_vcacube.allow_huge_operations=True
+        vca = VCA(downsamp_vcacube)
+        vca.run(verbose=False, beam_correct=correctbeam)
+        vca_array=np.vstack((vca_array,[vca.slope,i,vca.slope_err]))
+    vca_array=vca_array[1:,:]
 
-#compute SPS, add in distance at some point as parameter
-pspec = PowerSpectrum(moment0)
-pspec.run(verbose=False, xunit=u.pix**-1)
-vca_array=np.vstack((vca_array,[pspec.slope,len(cube[:,0,0]),pspec.slope_err]))
+    #save the array for future plotting without recomputing
+    np.save(array_save_loc, vca_array)
 
-#iterate VCA over fractions of the total width of the PPV cube
-for i in [128,64,32,16,8,4,2,1]:
-    cube.allow_huge_operations=True
-    downsamp_cube = cube.downsample_axis(i, axis=0)
-    downsamp_cube.allow_huge_operations=True
-    vca = VCA(downsamp_cube)
-    vca.run(verbose=False, beam_correct=correctbeam)
-    vca_array=np.vstack((vca_array,[vca.slope,i,vca.slope_err]))
-vca_array=vca_array[1:,:]
+for j in np.arange(0,7):
+        for i in np.arange(0,7):
+                cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.fits')
+		figsaveloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/' + smc_grid7x7_x'+str(i)+'_y'+str(j)
+		do_vca(cube,figsaveloc)                
+		print('done x'+str(i)+' y'+str(j))
 
-#save the array for future plotting without recomputing
-np.save(figsaveloc, vca_array)
-##########################
 
-def def greet(name):
-	"""This function greets to
-	the person passed in as
-	parameter"""
-	print("Hello, " + name + ". Good morning!")
+
+
