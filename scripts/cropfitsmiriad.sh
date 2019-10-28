@@ -1,16 +1,16 @@
 #!/bin/csh
 
 #miriad task to crop in space and velocity
+#format = boxes(xmin,ymin,xmax,ymax)(z1,z2)
+#format = images(z1,z2) Select image planes z1 to z2 inclusive. z2 defaults to z1.
+
 
 cd /priv/myrtle1/gaskap/nickill/smc/
-fits in='/avatar/nipingel/ASKAP/SMC/data/smc2019/CUBES/CO-Fields/SMC_SB8906_MSCLEAN_Briggs_r1.1_CONTSUB_chanChunk3_beams25-26.FITS' out=miriadcrop.tmp.image op=xyin
-imsub region='boxes(1585,1973,1785,2173)(48,80)' in='miriadcrop.tmp.image' out=miriadcrop2.tmp.image 
-fits in='miriadcrop2.tmp.image' out='smcCOmiriadcrop.fits' op=xyout line=velocity
+fits in='/avatar/naomi/ASKAP/SMC/SB_8906/SMC_8906.lsr.K.fits' out=miriadcrop.tmp.image op=xyin
+imsub region='boxes(1972,2349,2788,3285)(55,309)' in='miriadcrop.tmp.image' out=miriadcrop2.tmp.image 
+fits in='miriadcrop2.tmp.image' out='smc_askap_northbar.fits' op=xyout
 rm -rf miriadcrop.tmp.image
 rm -rf miriadcrop2.tmp.image
-
-
-
 
 
 
