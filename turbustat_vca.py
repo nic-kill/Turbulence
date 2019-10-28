@@ -117,7 +117,7 @@ def do_vca(vcacube, array_save_loc, fig_save_loc):
         downsamp_vcacube = vcacube.downsample_axis(i, axis=0)
         downsamp_vcacube.allow_huge_operations=True
         vca = VCA(downsamp_vcacube)
-        vca.run(verbose=False, beam_correct=correctbeam, save_name=fig_save_loc)
+        vca.run(verbose=False, beam_correct=correctbeam, save_name=fig_save_loc+'_thickness'+str(i)+'.png')
         vca_array=np.vstack((vca_array,[vca.slope,i,vca.slope_err]))
     vca_array=vca_array[1:,:]
 
@@ -126,9 +126,9 @@ def do_vca(vcacube, array_save_loc, fig_save_loc):
 
 for j in np.arange(0,7):
 	for i in np.arange(0,7):
-		cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.fits')
-		arrayloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_x'+str(i)+'_y'+str(j)
-		figloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.png'
+		cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)+'.fits')
+		arrayloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
+		figloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
 		do_vca(cube,arrayloc,figloc)                
 		print('done x'+str(i)+' y'+str(j))
 
