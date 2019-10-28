@@ -125,9 +125,9 @@ def do_vca(vcacube, array_save_loc):
     np.save(array_save_loc, vca_array)
 
 for j in np.arange(0,7):
-        for i in np.arange(0,7):
-                cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.fits')
-		figsaveloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/' + smc_grid7x7_x'+str(i)+'_y'+str(j)
+	for i in np.arange(0,7):
+		cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_x'+str(i)+'_y'+str(j)+'.fits')
+		figsaveloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_x'+str(i)+'_y'+str(j)
 		do_vca(cube,figsaveloc)                
 		print('done x'+str(i)+' y'+str(j))
 
