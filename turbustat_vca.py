@@ -130,7 +130,19 @@ for j in np.arange(0,7):
 		cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)+'.fits')
 		arrayloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
 		figloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
-		do_vca(cube,arrayloc,figloc)                
+		
+		#check for only nans in first slice of cube
+		finitechecker=0
+		for checkx in np.arange(0,len(cube.unmasked_data[0,:,0])):
+			for checky in np.arange(0,len(cube.unmasked_data[0,0,:])):
+				if np.isfinite(cube.unmasked_data[0,checkx,checky])==True:
+					finitechecker+=1
+		
+		#do vca or skip depending on whether its only NaNs
+		if finitechecker >= 1:
+			do_vca(cube,arrayloc,figloc)                
+		else:
+			print('data is only NaNs/inf')
 		print('done x'+str(i)+' y'+str(j))
 
 

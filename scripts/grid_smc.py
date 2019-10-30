@@ -43,26 +43,25 @@ wholecube.close()
 ##################
 
 
-
-#################
-#make mom0 and overwrite the mom0 with region
-
-
 ##################
-
-
-
-##################
-#Split off subregions
+#Make mom0 to overlay regions on and split off subregions
 wholecube=SpectralCube.read(sourcefile)
+
+#make the mom0 to overwrite
+moment0=wholecube.moment(order=0)
 
 for j in np.arange(0,splitfactor):
 	for i in np.arange(0,splitfactor):
-		sub=wholecube.subcube(xlo=int(xax[i]), xhi=int(xax[i+1]), ylo=int(yax[j]), yhi=int(yax[j+1]), zlo=55, zhi=310, rest_value=None)
-		sub.write(cubenameprefix+'_x'+str(i)+'_y'+str(j)+'.fits')
+		print('starting x'+str(i)+' y'+str(j))
+		#overwrite region boundaries with really high values
+		moment0.array[:,int(xax[i])]=99999999
+		moment0.array[int(yax[j]),:]=99999999
+		#split off sub regions
+		#sub=wholecube.subcube(xlo=int(xax[i]), xhi=int(xax[i+1]), ylo=int(yax[j]), yhi=int(yax[j+1]), zlo=55, zhi=310, rest_value=None)
+		#sub.write(cubenameprefix+'_x'+str(i)+'_y'+str(j)+'.fits')
 		print('done x'+str(i)+' y'+str(j))
+moment0.write(cubenameprefix+'_regionoutlines.fits')
 #################
-
 
 
 
