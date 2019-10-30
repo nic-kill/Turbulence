@@ -10,6 +10,8 @@ from radio_beam import Beam
 import numpy as np
 from turbustat.statistics import VCA, PowerSpectrum
 from turbustat.statistics.apodizing_kernels import CosineBellWindow, TukeyWindow, HanningWindow, SplitCosineBellWindow
+import schwimmbad
+
 
 #########################
 ####SET PARAMETERS
@@ -94,57 +96,66 @@ if taper==True:
 
 
 ########################
-def do_vca(vcacube, array_save_loc, fig_save_loc):
-    """This function greets to
-    the person passed in as
-    parameter"""
-    
-    vca_array=np.zeros(3)
-    #arlen=int(len(vcacube.data[:,0,0]))/10
-    
-    #do full thickness mom0 SPS and add to array first
-    #import data and compute moment 0
-    moment0=vcacube.moment(order=0)
-    
-    #compute SPS, add in distance at some point as parameter
-    pspec = PowerSpectrum(moment0)
-    pspec.run(verbose=False, xunit=u.pix**-1)
-    vca_array=np.vstack((vca_array,[pspec.slope,len(vcacube[:,0,0]),pspec.slope_err]))
+def do_vca(input):
+	vcacube, array_save_loc, fig_save_loc = input
+	print('starting x'+str(vcacube))	
 
-    #iterate VCA over fractions of the total width of the PPV vcacube
-    for i in [128,64,32,16,8,4,2,1]:
-        vcacube.allow_huge_operations=True
-        downsamp_vcacube = vcacube.downsample_axis(i, axis=0)
-        downsamp_vcacube.allow_huge_operations=True
-        vca = VCA(downsamp_vcacube)
-        vca.run(verbose=False, beam_correct=correctbeam, save_name=fig_save_loc+'_thickness'+str(i)+'.png')
-        vca_array=np.vstack((vca_array,[vca.slope,i,vca.slope_err]))
-    vca_array=vca_array[1:,:]
+	#load in the vcacube
+	vcacube=SpectralCube.read(vcacube)
+	
+	#check for only nans in first slice of cube
+	finites=0
+	nonfinites=0	
+	for checkx in np.arange(0,len(cube.unmasked_data[0,:,0])):
+		for checky in np.arange(0,len(cube.unmasked_data[0,0,:])):
+			if np.isfinite(cube.unmasked_data[0,checkx,checky])==True:
+				finites+=1
+			else:
+				nonfinites+=1
 
-    #save the array for future plotting without recomputing
-    np.save(array_save_loc, vca_array)
-
-for j in np.arange(0,7):
-	for i in np.arange(0,7):
-		print('starting x'+str(i)+' y'+str(j))
-		cube = SpectralCube.read('/avatar/nickill/smc/grid_cubes/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)+'.fits')
-		arrayloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
-		figloc = '/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid7x7_masked_x'+str(i)+'_y'+str(j)
+	#do vca or skip depending on whether its only NaNs
+	if finites < 1:
+		return 'data is only NaNs/inf'
+	else:
+		vca_array=np.zeros(3)
+		#arlen=int(len(vcacube.data[:,0,0]))/10
 		
-		#check for only nans in first slice of cube
-		finitechecker=0
-		for checkx in np.arange(0,len(cube.unmasked_data[0,:,0])):
-			for checky in np.arange(0,len(cube.unmasked_data[0,0,:])):
-				if np.isfinite(cube.unmasked_data[0,checkx,checky])==True:
-					finitechecker+=1
-		
-		#do vca or skip depending on whether its only NaNs
-		if finitechecker >= 1:
-			do_vca(cube,arrayloc,figloc)                
-		else:
-			print('data is only NaNs/inf')
-		print('done x'+str(i)+' y'+str(j))
+		#do full thickness mom0 SPS and add to array first
+		#import data and compute moment 0
+		moment0=vcacube.moment(order=0)
+
+		#compute SPS, add in distance at some point as parameter
+		pspec = PowerSpectrum(moment0)
+		pspec.run(verbose=False, xunit=u.pix**-1)
+		vca_array=np.vstack((vca_array,[pspec.slope,len(vcacube[:,0,0]),pspec.slope_err]))
+
+		#iterate VCA over fractions of the total width of the PPV vcacube
+		for i in [128,64,32,16,8,4,2,1]:
+			vcacube.allow_huge_operations=True
+			downsamp_vcacube = vcacube.downsample_axis(i, axis=0)
+			downsamp_vcacube.allow_huge_operations=True
+			vca = VCA(downsamp_vcacube)
+			vca.run(verbose=False, beam_correct=correctbeam, save_name=fig_save_loc+'_thickness'+str(i)+'.png')
+			vca_array=np.vstack((vca_array,[vca.slope,i,vca.slope_err]))
+		vca_array=vca_array[1:,:]
+
+		#save the array for future plotting without recomputing
+		np.save(array_save_loc, vca_array)
+		return vca_array
+#####################
 
 
+# Use multipool - same as multiprocessing
+with schwimmbad.MultiPool() as pool:
+	print('started multi')
+	vcacube=['/avatar/nickill/smc/grid_cubes/smc_grid31x31_masked'+'_x'+str(i)+'_y'+str(j)+'.fits' for j in np.arange(0,31) for i in np.arange(0,31)]
+	arrayloc=['/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid31x31_masked_x'+str(i)+'_y'+str(j) for j in np.arange(0,31) for i in np.arange(0,31)]
+	figloc=['/priv/myrtle1/gaskap/nickill/smc/vca/turbustatoutput/smc_grid31x31_masked_x'+str(i)+'_y'+str(j) for j in np.arange(0,31) for i in np.arange(0,31)]
 
-
+	#inputs=np.vstack((vcacube,arrayloc,figloc))
+	inputs=list(zip(vcacube,arrayloc,figloc))
+	
+	#out = list(pool.map(do_vca, inputs[0,:], inputs[1,:], inputs[2,:]))
+	out = list(pool.map(do_vca, inputs))
+	print('finished multi')
+print(out)
